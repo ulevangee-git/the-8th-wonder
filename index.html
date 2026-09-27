@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>8th Wonder Calc</title>
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0c0b0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="8th Wonder">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0c0b0a; --panel:#141210; --panel2:#1a1714; --line:rgba(237,230,218,.10); --line2:rgba(237,230,218,.22);
+  --cream:#ede6da; --muted:#9a9187; --sand:#c9b79c; --ember:#b98b5e;
+  --serif:"Cormorant Garamond",Georgia,serif; --sans:"Manrope",system-ui,-apple-system,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;background:var(--bg);color:var(--cream);font-family:var(--sans);font-size:15px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 20px 60px;display:grid;grid-template-columns:340px 1fr;gap:20px}
+@media (max-width:920px){.wrap{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px}
+
+/* Sidebar / controls */
+aside{padding:26px 24px;align-self:start;position:sticky;top:20px}
+@media (max-width:920px){aside{position:static}}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--serif);letter-spacing:.2em;font-size:17px;white-space:nowrap;margin-bottom:28px}
+.brand i{width:10px;height:10px;border-radius:50%;background:var(--cream);display:inline-block}
+.field{margin-bottom:22px}
+.field label,.lbl{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.box{display:flex;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:0 12px;height:44px}
+.box:focus-within{border-color:var(--sand)}
+.box span{color:var(--muted);font-size:14px}
+.box input,.box select{flex:1;min-width:0;background:transparent;border:0;color:var(--cream);font:500 15px var(--sans);outline:none;padding:0 6px;height:100%}
+.box select option{background:var(--panel)}
+.mini{width:92px;height:36px;padding:0 10px}
+.mini input{text-align:right;padding:0}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;margin-top:14px;
+  background:linear-gradient(var(--cream),var(--cream)) 0/var(--p,50%) 100% no-repeat, rgba(237,230,218,.14)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--bg);border:2px solid var(--cream);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--bg);border:2px solid var(--cream);cursor:pointer}
+input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--sand);outline-offset:2px}
+.field label.ask{font-family:var(--serif);font-size:21px;line-height:1.25;color:var(--cream);margin-bottom:12px}
+.box select{cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:28px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23c9b79c' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 4px center}
+.box input:focus-visible,.box select:focus-visible{outline:none}
+.box:focus-within{box-shadow:0 0 0 3px rgba(201,183,156,.18)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px}
+.seg.two{grid-template-columns:1fr 1fr}
+.seg button{background:none;border:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;position:relative;z-index:1;min-height:40px;color:var(--muted);font:500 13px var(--sans);padding:9px 0;border-radius:999px;cursor:pointer;transition:background .2s,color .2s}
+.seg button[aria-pressed=true]{background:var(--cream);color:var(--bg)}
+.note{font-family:var(--serif);font-style:italic;font-size:20px;line-height:1.25;color:var(--sand);margin-top:30px;border-top:1px solid var(--line);padding-top:20px}
+
+/* Main */
+main{display:grid;gap:20px;min-width:0}
+.hero{position:relative;overflow:hidden;padding:34px 34px 30px;min-height:300px;
+  background:
+    radial-gradient(120% 90% at 85% 100%, rgba(185,139,94,.35), transparent 60%),
+    linear-gradient(180deg,#171411 0%,#0e0c0b 100%)}
+.hero svg.ridge{position:absolute;right:0;bottom:0;width:70%;height:75%;opacity:.9;pointer-events:none}
+.hero > *:not(svg){position:relative}
+.date{font-size:12px;letter-spacing:.3em;color:var(--muted)}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(46px,7vw,84px);line-height:1;margin:14px 0 10px;letter-spacing:-.01em;font-variant-numeric:lining-nums}
+.hero p{color:var(--muted);margin:0;max-width:48ch}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:620px){.stats{grid-template-columns:1fr}}
+.stat{padding:18px 20px}
+.stat b{display:block;font-family:var(--serif);font-weight:500;font-size:32px;line-height:1.1}
+.stat small{color:var(--muted);font-size:13px}
+.bar{height:3px;background:rgba(237,230,218,.12);border-radius:3px;margin-top:14px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--cream);border-radius:3px;transition:width .4s}
+
+.charts{display:grid;grid-template-columns:1.7fr 1fr;gap:20px}
+@media (max-width:1060px){.charts{grid-template-columns:1fr}}
+.card{padding:22px 24px}
+.card h2{font:500 17px var(--sans);margin:0 0 4px}
+.card .sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+.chartbox{position:relative;height:280px}
+.donut{position:relative;height:210px}
+.donut .mid{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
+.donut .mid b{font-family:var(--serif);font-size:36px;font-weight:500}
+.donut .mid small{color:var(--muted);font-size:12px}
+.legend{display:grid;gap:10px;margin-top:18px;font-size:14px}
+.legend div{display:flex;justify-content:space-between;gap:10px}
+.legend span{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.legend span i{width:9px;height:9px;border-radius:50%}
+
+.tablewrap{overflow-x:auto;max-height:440px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;min-width:560px}
+th{position:sticky;top:0;background:var(--panel);text-align:right;font-weight:500;color:var(--muted);font-size:12.5px;padding:10px 12px;border-bottom:1px solid var(--line2)}
+th:first-child,td:first-child{text-align:left}
+td{text-align:right;padding:11px 12px;border-bottom:1px solid var(--line)}
+td:last-child{color:var(--cream);font-weight:600}
+td.int{color:var(--sand)}
+tr:hover td{background:rgba(237,230,218,.03)}
+.foot{color:var(--muted);font-size:12.5px;margin-top:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<aside class="panel" aria-label="Calculator inputs">
+  <div class="brand"><i></i>8TH WONDER CALC</div>
+
+  <div class="field">
+    <label for="currency" class="ask">What currency are you planning to use today?</label>
+    <div class="box"><select id="currency">
+      <option value="USD" selected>$ US Dollar</option>
+      <option value="PHP">₱ Philippine Peso</option>
+    </select></div>
+  </div>
+
+  <div class="field">
+    <label for="principal">Starting amount</label>
+    <div class="box"><span class="cur">$</span><input id="principal" type="text" value="100,000" inputmode="decimal" autocomplete="off"></div>
+  </div>
+
+  <div class="field">
+    <div class="row"><label for="rateN">Annual interest rate</label>
+      <div class="box mini"><input id="rateN" type="number" min="0" max="30" step="0.1" value="6"><span>%</span></div></div>
+    <input id="rate" type="range" min="0" max="30" step="0.1" value="6" aria-label="Annual interest rate slider">
+  </div>
+
+  <div class="field">
+    <div class="row"><label for="yearsN">Number of years</label>
+      <div class="box mini"><input id="yearsN" type="number" min="1" max="50" step="1" value="20"><span>yrs</span></div></div>
+    <input id="years" type="range" min="1" max="50" step="1" value="20" aria-label="Number of years slider">
+  </div>
+
+  <div class="field">
+    <span class="lbl">Interest compounds</span>
+    <div class="seg" id="compSeg">
+      <button type="button" data-v="daily" aria-pressed="false">Daily</button>
+      <button type="button" data-v="monthly" aria-pressed="true">Monthly</button>
+      <button type="button" data-v="annually" aria-pressed="false">Annually</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="contrib">Regular deposit</label>
+    <div class="box"><span class="cur">$</span><input id="contrib" type="text" value="2,000" inputmode="decimal" autocomplete="off"></div>
+  </div>
+
+  <div class="field">
+    <label for="freq">Deposit every</label>
+    <div class="box"><select id="freq">
+      <option value="none">No regular deposits</option>
+      <option value="weekly">Week (52× a year)</option>
+      <option value="biweekly">2 weeks (26× a year)</option>
+      <option value="monthly" selected>Month (12× a year)</option>
+      <option value="quarterly">Quarter (4× a year)</option>
+    </select></div>
+  </div>
+
+  <div class="note">Small deposits. Patient years. A bigger tomorrow.</div>
+</aside>
+
+<main>
+  <section class="panel hero" aria-live="polite">
+    <svg class="ridge" viewBox="0 0 600 300" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3029"/><stop offset="1" stop-color="#0e0c0b"/></linearGradient>
+      <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#231d19"/><stop offset="1" stop-color="#0e0c0b"/></linearGradient></defs>
+      <path d="M0 300 L120 200 L190 230 L330 60 L400 140 L450 110 L600 220 L600 300Z" fill="url(#g)"/>
+      <path d="M330 60 L350 95 L338 90 L322 120 L310 100Z" fill="#c9b79c" opacity=".35"/>
+      <path d="M0 300 L80 250 L200 270 L300 210 L420 260 L520 230 L600 260 L600 300Z" fill="url(#g2)"/>
+    </svg>
+    <div class="date" id="heroDate"></div>
+    <h1 id="heroTotal">₱0</h1>
+    <p id="heroText">Your balance after 20 years.</p>
+  </section>
+
+  <section class="stats">
+    <div class="panel stat"><b id="sDeposits">₱0</b><small>Total you put in</small><div class="bar"><i id="bDep"></i></div></div>
+    <div class="panel stat"><b id="sInterest">₱0</b><small>Interest earned</small><div class="bar"><i id="bInt"></i></div></div>
+    <div class="panel stat"><b id="sMult">1.0×</b><small>Growth on your money</small><div class="bar"><i id="bMult"></i></div></div>
+  </section>
+
+  <section class="charts">
+    <div class="panel card">
+      <h2>Growth over time</h2>
+      <p class="sub">Balance each year, split into your deposits and interest earned.</p>
+      <div class="chartbox"><canvas id="lineChart" aria-label="Balance growth chart" role="img"></canvas></div>
+    </div>
+    <div class="panel card">
+      <h2>Where your money comes from</h2>
+      <p class="sub">Final balance breakdown.</p>
+      <div class="donut"><canvas id="donutChart" aria-label="Deposits versus interest chart" role="img"></canvas>
+        <div class="mid"><b id="pctInt">0%</b><small>from interest</small></div></div>
+      <div class="legend">
+        <div><span><i style="background:#6f655b"></i>Starting amount</span><strong id="lStart"></strong></div>
+        <div><span><i style="background:#c9b79c"></i>Regular deposits</span><strong id="lDep"></strong></div>
+        <div><span><i style="background:#ede6da"></i>Interest</span><strong id="lInt"></strong></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel card">
+    <h2>Year-by-year breakdown</h2>
+    <p class="sub">How your balance builds each year.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Year</th><th>Deposits this year</th><th>Interest this year</th><th>Total deposited</th><th>Total interest</th><th>Year-end balance</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="foot">Estimates only. Assumes a fixed rate, deposits at the end of each period, and no taxes or fees.</p>
+  </section>
+</main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const state = { currency:'USD', comp:'monthly' };
+
+function fmt(n, compact){
+  const loc = state.currency==='PHP' ? 'en-PH' : 'en-US';
+  return new Intl.NumberFormat(loc,{style:'currency',currency:state.currency,
+    notation: compact ? 'compact' : 'standard', maximumFractionDigits: compact ? 1 : 0}).format(n);
+}
+
+// Day-based simulation (365-day years)
+function simulate(P, ratePct, years, comp, amt, freq){
+  const r = ratePct/100;
+  const monthEnds = new Set(), quarterEnds = new Set();
+  for(let m=1;m<=12;m++){ const d=Math.round(365*m/12); monthEnds.add(d); if(m%3===0) quarterEnds.add(d); }
+  let bal = P, pending = 0, totDep = P, totInt = 0;
+  const rows = [];
+  for(let y=1;y<=years;y++){
+    let yDep=0, yInt=0;
+    for(let d=1; d<=365; d++){
+      // interest
+      if(comp==='daily'){ const i=bal*r/365; bal+=i; yInt+=i; }
+      else if(comp==='monthly' && monthEnds.has(d)){ const i=bal*r/12; bal+=i; yInt+=i; }
+      else if(comp==='annually' && d===365){ const i=bal*r; bal+=i; yInt+=i; }
+      // deposits
+      let dep=false;
+      if(freq==='weekly') dep = d%7===0 && d<=364;
+      else if(freq==='biweekly') dep = d%14===0 && d<=364;
+      else if(freq==='monthly') dep = monthEnds.has(d);
+      else if(freq==='quarterly') dep = quarterEnds.has(d);
+      if(dep && amt>0){ bal+=amt; yDep+=amt; }
+    }
+    totDep+=yDep; totInt+=yInt;
+    rows.push({y, yDep, yInt, totDep, totInt, bal});
+  }
+  return rows;
+}
+
+let lineChart, donutChart;
+const hasChart = typeof Chart!=='undefined';
+if(hasChart){ Chart.defaults.font.family = 'Manrope, system-ui, sans-serif'; Chart.defaults.color = '#9a9187'; }
+
+function initCharts(){
+  if(!hasChart) return;
+  lineChart = new Chart($('lineChart'),{
+    type:'bar',
+    data:{labels:[],datasets:[
+      {label:'Deposits',data:[],backgroundColor:'#6f655b',borderRadius:4,stack:'s'},
+      {label:'Interest',data:[],backgroundColor:'#ede6da',borderRadius:4,stack:'s'}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{boxWidth:9,boxHeight:9,usePointStyle:true,color:'#ede6da'}},
+        tooltip:{backgroundColor:'#1a1714',borderColor:'rgba(237,230,218,.2)',borderWidth:1,titleColor:'#ede6da',bodyColor:'#ede6da',
+          callbacks:{title:i=>'Year '+i[0].label,label:c=>' '+c.dataset.label+': '+fmt(c.raw),
+            footer:i=>'Balance: '+fmt(i.reduce((a,b)=>a+b.raw,0))}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{maxTicksLimit:12}},
+        y:{stacked:true,grid:{color:'rgba(237,230,218,.07)'},border:{display:false},ticks:{callback:v=>fmt(v,true)}}}}
+  });
+  donutChart = new Chart($('donutChart'),{
+    type:'doughnut',
+    data:{labels:['Starting amount','Regular deposits','Interest'],datasets:[{data:[1,1,1],
+      backgroundColor:['#6f655b','#c9b79c','#ede6da'],borderColor:'#141210',borderWidth:3}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'74%',animation:{duration:300},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1714',callbacks:{label:c=>' '+fmt(c.raw)}}}}
+  });
+}
+
+function num(id, min, max){ let v=parseFloat(String($(id).value).replace(/,/g,'')); if(isNaN(v)) v=0; return Math.min(Math.max(v,min),max); }
+
+function update(){
+  const P=num('principal',0,1e12), rate=num('rateN',0,30), years=Math.round(num('yearsN',1,50));
+  const amt=num('contrib',0,1e10), freq=$('freq').value;
+  $('contrib').closest('.field').style.opacity = freq==='none' ? .45 : 1;
+  const rows = simulate(P, rate, years, state.comp, freq==='none'?0:amt, freq);
+  const last = rows[rows.length-1];
+  const deposits = last.totDep, interest = last.totInt, total = last.bal;
+  const regular = deposits - P;
+
+  $('heroTotal').textContent = fmt(total);
+  $('heroText').textContent = `Your balance after ${years} year${years>1?'s':''} at ${rate}% compounded ${state.comp==='annually'?'annually':state.comp}.`;
+  $('sDeposits').textContent = fmt(deposits);
+  $('sInterest').textContent = fmt(interest);
+  const mult = deposits>0 ? total/deposits : 1;
+  $('sMult').textContent = mult.toFixed(2)+'×';
+  $('bDep').style.width = (total? deposits/total*100:0)+'%';
+  $('bInt').style.width = (total? interest/total*100:0)+'%';
+  $('bMult').style.width = Math.min(100,(mult-1)/4*100)+'%';
+
+  $('pctInt').textContent = (total? Math.round(interest/total*100):0)+'%';
+  $('lStart').textContent = fmt(P); $('lDep').textContent = fmt(regular); $('lInt').textContent = fmt(interest);
+
+  if(lineChart){
+  lineChart.data.labels = rows.map(r=>r.y);
+  lineChart.data.datasets[0].data = rows.map(r=>r.totDep);
+  lineChart.data.datasets[1].data = rows.map(r=>r.totInt);
+  lineChart.update();
+  donutChart.data.datasets[0].data = [P, regular, interest];
+  donutChart.update();
+  }
+
+  $('tbody').innerHTML = rows.map(r=>`<tr><td>${r.y}</td><td>${fmt(r.yDep)}</td><td class="int">${fmt(r.yInt)}</td><td>${fmt(r.totDep)}</td><td>${fmt(r.totInt)}</td><td>${fmt(r.bal)}</td></tr>`).join('');
+}
+
+function paintRange(el){ el.style.setProperty('--p', ((el.value-el.min)/(el.max-el.min)*100)+'%'); }
+function link(rangeId, numId){
+  const r=$(rangeId), n=$(numId);
+  r.addEventListener('input',()=>{ n.value=r.value; paintRange(r); update(); });
+  n.addEventListener('input',()=>{ if(n.value!==''){ r.value=n.value; paintRange(r); } update(); });
+  n.addEventListener('blur',()=>{ const v=num(numId,+n.min,+n.max); n.value=v; r.value=v; paintRange(r); update(); });
+  paintRange(r);
+}
+link('rate','rateN'); link('years','yearsN');
+function addCommas(el){
+  const old=el.value, caret=el.selectionStart;
+  const digitsBefore=old.slice(0,caret).replace(/[^\d.]/g,'').length;
+  let raw=old.replace(/[^\d.]/g,'');
+  const dot=raw.indexOf('.');
+  if(dot>-1) raw=raw.slice(0,dot+1)+raw.slice(dot+1).replace(/\./g,'').slice(0,2);
+  let [int,dec]=raw.split('.');
+  int=(int||'').replace(/^0+(?=\d)/,'').replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  const out=dec!==undefined?int+'.'+dec:int;
+  el.value=out;
+  let pos=0,count=0;
+  while(pos<out.length && count<digitsBefore){ if(/[\d.]/.test(out[pos])) count++; pos++; }
+  el.setSelectionRange(pos,pos);
+}
+['principal','contrib'].forEach(id=>$(id).addEventListener('input',e=>{addCommas(e.target);update();}));
+$('freq').addEventListener('change',update);
+
+document.querySelectorAll('#compSeg button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('#compSeg button').forEach(x=>x.setAttribute('aria-pressed', x===btn ? 'true' : 'false'));
+    state.comp=btn.dataset.v;
+    update();
+  });
+});
+$('currency').addEventListener('change',e=>{
+  state.currency=e.target.value;
+  document.querySelectorAll('.cur').forEach(s=>s.textContent=state.currency==='PHP'?'₱':'$');
+  update();
+});
+
+$('heroDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase();
+initCharts(); update();
+</script>
+</body>
+</html>
