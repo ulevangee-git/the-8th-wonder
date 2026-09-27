@@ -26,7 +26,26 @@
 *,*::before,*::after{box-sizing:inherit}
 html,body{margin:0;background:var(--bg);color:var(--cream);font-family:var(--sans);font-size:15px;line-height:1.5}
 .wrap{max-width:1240px;margin:0 auto;padding:28px 20px 60px;display:grid;grid-template-columns:340px 1fr;gap:20px}
-@media (max-width:920px){.wrap{grid-template-columns:1fr}}
+@media (max-width:920px){.wrap{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:920px){
+  .wrap{display:block}
+  .wrap>aside{margin-bottom:14px}
+  main{display:flex;flex-direction:column;gap:14px}
+  .charts{display:flex;flex-direction:column;gap:14px}
+  main>*,.charts>*,.stats>*{width:100%;max-width:100%}
+}
+@media (max-width:620px){
+  .wrap{padding:14px 12px 40px;gap:14px}
+  aside{padding:22px 18px}
+  .hero{min-height:0;padding:26px 22px 90px}
+  .hero svg.ridge{height:55%}
+  .stats{gap:10px}
+  .stat{padding:14px 18px}
+  .stat b{font-size:28px}
+  .card{padding:18px 16px}
+  .chartbox{height:240px}
+  table{min-width:520px;font-size:13px}
+}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:22px}
 
 /* Sidebar / controls */
@@ -61,7 +80,9 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
 .note{font-family:var(--serif);font-style:italic;font-size:20px;line-height:1.25;color:var(--sand);margin-top:30px;border-top:1px solid var(--line);padding-top:20px}
 
 /* Main */
-main{display:grid;gap:20px;min-width:0}
+main{display:grid;gap:20px;min-width:0;grid-template-columns:minmax(0,1fr)}
+.wrap>*{min-width:0}
+html,body{overflow-x:hidden}
 .hero{position:relative;overflow:hidden;padding:34px 34px 30px;min-height:300px;
   background:
     radial-gradient(120% 90% at 85% 100%, rgba(185,139,94,.35), transparent 60%),
@@ -71,8 +92,8 @@ main{display:grid;gap:20px;min-width:0}
 .date{font-size:12px;letter-spacing:.3em;color:var(--muted)}
 .hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(46px,7vw,84px);line-height:1;margin:14px 0 10px;letter-spacing:-.01em;font-variant-numeric:lining-nums}
 .hero p{color:var(--muted);margin:0;max-width:48ch}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-@media (max-width:620px){.stats{grid-template-columns:1fr}}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:620px){.stats{grid-template-columns:minmax(0,1fr)}}
 .stat{padding:18px 20px}
 .stat b{display:block;font-family:var(--serif);font-weight:500;font-size:32px;line-height:1.1}
 .stat small{color:var(--muted);font-size:13px}
@@ -80,7 +101,7 @@ main{display:grid;gap:20px;min-width:0}
 .bar i{display:block;height:100%;background:var(--cream);border-radius:3px;transition:width .4s}
 
 .charts{display:grid;grid-template-columns:1.7fr 1fr;gap:20px}
-@media (max-width:1060px){.charts{grid-template-columns:1fr}}
+@media (max-width:1060px){.charts{grid-template-columns:minmax(0,1fr)}}
 .card{padding:22px 24px}
 .card h2{font:500 17px var(--sans);margin:0 0 4px}
 .card .sub{color:var(--muted);font-size:13px;margin:0 0 16px}
@@ -104,6 +125,11 @@ td.int{color:var(--sand)}
 tr:hover td{background:rgba(237,230,218,.03)}
 .foot{color:var(--muted);font-size:12.5px;margin-top:14px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.panel,.card{min-width:0;max-width:100%;overflow:hidden}
+.chartbox,.donut{width:100%;max-width:100%;overflow:hidden}
+canvas{display:block;max-width:100%!important}
+.tablewrap{max-width:100%;-webkit-overflow-scrolling:touch}
 </style>
 </head>
 <body>
